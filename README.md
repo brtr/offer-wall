@@ -8,22 +8,11 @@
 npm install
 ```
 
-## 上传图片
-
+## 执行脚本
+修改脚本文件里面的chain和地址，然后
 ```
-node scripts/upload.js "./images"
+node src/checkNFT.js
 ```
-
-把ipfsHash粘贴到data.json的image参数里面替换
-
-## 生成metadata并上传
-
-```
-node scripts/generate_metadata.js
-node scripts/upload.js "./metadata"
-```
-
-把ipfsHash粘贴到.env里面的METADATA_URI替换
 
 ## 发布合约
 
