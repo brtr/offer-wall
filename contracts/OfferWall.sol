@@ -1755,13 +1755,29 @@ contract OfferWall is ERC721Enumerable, Ownable {
     struct Offer {
         string name;
         address tokenAddr;
-        uint256 reward;
+        uint8 reward;
         uint8 count;
         uint8 level;
         address requires;
+        uint256 tokenId;
     }
 
+    struct OfferTaken {
+        uint256 tokenId;
+        uint8 status;
+        bool valid;
+    }
+
+    uint8[] private STATUS = [
+        0,  // taken
+        1   // done
+    ];
+
     mapping (uint256 => Offer) public offerInfo;
+    mapping (uint256 => address[]) public offerTakers;
+    mapping (address => OfferTaken[]) public userOffers;
+
+    Offer[] public offerList;
     address[] private whiteList;
     address public FMB_TOKEN;
 
@@ -1809,23 +1825,55 @@ contract OfferWall is ERC721Enumerable, Ownable {
         FMB_TOKEN = _token;
     }
 
-    function addOffer(string memory name, address tokenAddr, uint256 reward, uint8 count, uint8 level, address requires) public onlyWhiteList {
-        uint256 minted = totalSupply();
-        offerInfo[minted + 1] = Offer(name, tokenAddr, reward, count, level, requires);
-        _mint(_msgSender(), 1);
+    function addOffer(string memory name, address tokenAddr, uint8 reward, uint8 count, uint8 level, address requires) public onlyWhiteList {
+        uint256 minted = totalSupply() + 1;
+        Offer memory o = Offer(name, tokenAddr, reward, count, level, requires, minted);
+        offerInfo[minted] = o;
+        offerList.push(o);
+        _mint(_msgSender(), minted);
     }
 
     function getOffer(uint256 tokenId) public view returns (Offer memory) {
         return offerInfo[tokenId];
     }
 
-    function claim(uint256 tokenId) public {
+    function getOffers() public view returns (Offer[] memory) {
+        return offerList;
+    }
+
+    function take(uint256 tokenId) public {
         Offer storage o = offerInfo[tokenId];
+        OfferTaken memory ot = getUserOffer(tokenId);
+        require(!ot.valid, "Already taken!");
+        require(o.count > 0, "Offer's count must greater than zero!");
+
+        o.count -= 1;
+        updateOfferList(tokenId);
+        offerTakers[tokenId].push(_msgSender());
+        OfferTaken memory newOT = OfferTaken(o.tokenId, 0, true);
+        userOffers[_msgSender()].push(newOT);
+    }
+
+    function updateOfferList(uint256 tokenId) public {
+        for (uint i=0; i<offerList.length; i++) {
+            Offer storage o = offerList[i];
+            if (o.tokenId == tokenId) {
+                o.count -= 1;
+            }
+        }
+    }
+
+    function claim(uint256 tokenId) public {
+        Offer memory o = offerInfo[tokenId];
+        OfferTaken memory ot = getUserOffer(tokenId);
+        require(ot.status == 0, "Invalid status");
         bool canClaim = false;
         if(o.level > 0) {
             uint256 level = ERCItem(o.tokenAddr).getFarm(_msgSender()).length;
             if (level > o.level) {
                 canClaim = true;
+            } else {
+                canClaim = false;
             }
         }
 
@@ -1833,16 +1881,37 @@ contract OfferWall is ERC721Enumerable, Ownable {
             uint256 balance = ERCItem(o.requires).balanceOf(_msgSender());
             if (balance > 0) {
                 canClaim = true;
+            } else {
+                canClaim = false;
             }
         }
 
         if (canClaim) {
-            o.count -= 1;
+            updateUserOffer(tokenId);
             ERCItem(FMB_TOKEN).airDrop(_msgSender(), o.reward);
+        }
+    }
+
+    function updateUserOffer(uint256 tokenId) public {
+        OfferTaken[] storage ots = userOffers[_msgSender()];
+        for (uint i=0; i<ots.length; i++) {
+            if (ots[i].tokenId == tokenId) {
+                ots[i].status = 1;
+            }
         }
     }
 
     function getBalance() public view returns (uint256) {
         return address(this).balance;
+    }
+
+    function getUserOffer(uint256 tokenId) public view returns (OfferTaken memory) {
+        OfferTaken[] memory ots = userOffers[_msgSender()];
+
+        for (uint i=0; i<ots.length; i++) {
+            if (ots[i].tokenId == tokenId) {
+                return ots[i];
+            }
+        }
     }
 }

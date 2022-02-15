@@ -6,7 +6,7 @@ require('dotenv').config();
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
 
-const { API_URL, PRIVATE_KEY } = process.env;
+const { API_URL, API_KEY, PRIVATE_KEY } = process.env;
 
 module.exports = {
    solidity: {
@@ -20,7 +20,7 @@ module.exports = {
    },
    defaultNetwork: "rinkeby",
    etherscan: {
-      apiKey: "72SG7NUKFX9QWHGWSEWVKCR2IP51QXM1GW",
+      apiKey: API_KEY,
    },
    networks: {
       hardhat: {},

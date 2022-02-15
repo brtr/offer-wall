@@ -1,0 +1,47 @@
+#offerWall { position: relative; margin: 3rem 5rem; }
+.mx-3 { margin: 1rem; }
+.float-right { float: right; }
+div input, div button { font-size: 1.5rem; }
+
+.loginBtn {
+  position: absolute;
+  top: -1rem;
+  right: 10px;
+  font-size: 1.3rem;
+}
+
+#loader {
+  position: absolute;
+  top: calc(50% - 32px);
+  left: calc(50% - 32px);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  perspective: 800px;
+}
+
+#toolbar {
+  margin-top: 5rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+#loading {
+  z-index: 999;
+  background-color: #4c4945f7;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  text-align: center;
+  display: flex;
+}
+
+#loading img {
+  width: 400px;
+  height: 400px;
+  margin: auto;
+}

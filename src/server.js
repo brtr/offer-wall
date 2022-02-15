@@ -1,17 +1,24 @@
-const hre = require("hardhat");
-var express = require('express');
-var app = express();
+const handler = require('serve-handler');
+const http = require('http');
 
-app.use(express.static('public'));
+const server = http.createServer((request, response) => {
+    return handler(request, response, {
+      headers: [
+        {
+          source: '**/*',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'no-cache',
+            },
+          ],
+        },
+      ],
+    });
+  });
 
-app.get('/', function (req, res) {
-  console.log("Got a GET request for the homepage");
-  res.sendFile( __dirname + "/" + "index.html");
-})
-
-var server = app.listen(8081, function () {
-  var host = server.address().address
-  var port = server.address().port
-
-  console.log("Example app listening at http://%s:%s", host, port)
-})
+  server.listen(process.env.PORT || 8081, () => {
+    console.log(
+      `Dev server running at http://localhost:${process.env.PORT || 8081}`
+    );
+  });
