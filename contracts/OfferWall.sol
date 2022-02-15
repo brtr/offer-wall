@@ -1886,10 +1886,9 @@ contract OfferWall is ERC721Enumerable, Ownable {
             }
         }
 
-        if (canClaim) {
-            updateUserOffer(tokenId);
-            ERCItem(FMB_TOKEN).airDrop(_msgSender(), o.reward);
-        }
+        require(canClaim, "You're not able to claim this offer!");
+        updateUserOffer(tokenId);
+        ERCItem(FMB_TOKEN).airDrop(_msgSender(), o.reward);
     }
 
     function updateUserOffer(uint256 tokenId) public {
